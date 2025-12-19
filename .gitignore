@@ -1,1 +1,3 @@
 .venv/
+__pycache__/
+modular_subplot_example.png

@@ -1,19 +1,23 @@
 # Matplot Flex
+[![CI](https://github.com/obitsu-jo/matplot-flex/actions/workflows/ci.yml/badge.svg)](https://github.com/obitsu-jo/matplot-flex/actions/workflows/ci.yml)
 
-Reusable Matplotlib helpers for modular subplot layouts, text fitting, and common renderers.
+モジュール化されたサブプロット構成、テキストのフィット、基本レンダラーをまとめた Matplotlib 補助ライブラリです。
 
-## Structure
-- `matplot_flex/config.py`: Axis/legend/grid configs.
-- `matplot_flex/text_utils.py`: Text fitting, param formatter, rounded frames, date/sci formatters.
-- `matplot_flex/renderers.py`: Line/scatter/bar renderers, multi-series helper, `SeriesSpec`.
-- `matplot_flex/layout.py`: Figure/subfigure builders and `plot_on_module` orchestration.
-- `main.py`: Example that generates `modular_subplot_example.png`.
-- `smoke_test.py`: Simple generation check.
+## 構成
+- `matplot_flex/config.py`: 軸/凡例/グリッド設定。
+- `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
+- `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
+- `matplot_flex/layout.py`: Figure/SubFigure 生成と `plot_on_module` の司令塔。
+- `main.py`: `modular_subplot_example.png` を生成するサンプル。
+- `smoke_test.py`: 生成確認の簡易テスト。
 
-All public symbols are re-exported from `matplot_flex/__init__.py`.  
-More detailed API notes: see `matplot_flex/README.md`.
+公開APIは `matplot_flex/__init__.py` から再エクスポートしています。  
+詳細なAPIノートは `matplot_flex/README.md` を参照してください。
 
-## Quick start
+## 対応環境
+- Python 3.10 以上
+
+## クイックスタート
 ```python
 import numpy as np
 from matplot_flex import (
@@ -47,20 +51,49 @@ plot_on_module(
 fig.savefig("example.png", dpi=220)
 ```
 
-## Run the bundled example
+## サンプルの実行
 ```
 python main.py
 ```
-Outputs `modular_subplot_example.png` in the repo root.
+リポジトリ直下に `modular_subplot_example.png` を出力します。
 
-## Smoke test
+## CI
+GitHub Actions で `python smoke_test.py` を実行します。
+
+## テスト
 ```
 python smoke_test.py
 ```
-Regenerates the PNG and asserts it exists.
+PNG を再生成して、生成できたことを確認します。
 
-## Install as a local package (recommended for reuse)
+```
+python -m pytest -q
+```
+代表的な利用パターンの描画が通ることを確認します。
+
+## 依存関係の方針
+ライブラリ利用向けの範囲指定は `pyproject.toml` で管理し、開発・CI の再現性は `requirements.txt` の固定版で担保します。
+
+開発環境の導入:
+```
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+```
+
+## バージョニング方針
+SemVer（MAJOR.MINOR.PATCH）に従います。変更履歴は `CHANGELOG.md` を参照してください。
+
+- MAJOR: 互換性のない変更
+- MINOR: 後方互換のある機能追加
+- PATCH: 後方互換のあるバグ修正
+
+## ローカルパッケージとして導入（再利用向け）
 ```
 pip install -e .
 ```
-After that you can `import matplot_flex` from other directories in the same environment.
+以降は同一環境の別ディレクトリから `import matplot_flex` できます。
+
+## ライセンス
+MIT License（`LICENSE` を参照）
