@@ -3,16 +3,15 @@
 
 モジュール化されたサブプロット構成、テキストのフィット、基本レンダラーをまとめた Matplotlib 補助ライブラリです。
 
-## 構成
-- `matplot_flex/config.py`: 軸/凡例/グリッド設定。
-- `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
-- `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
-- `matplot_flex/layout.py`: Figure/SubFigure 生成と `plot_on_module` の司令塔。
-- `main.py`: `modular_subplot_example.png` を生成するサンプル。
-- `smoke_test.py`: 生成確認の簡易テスト。
+## インストール（PyPI）
+```
+pip install matplot-flex
+```
 
-公開APIは `matplot_flex/__init__.py` から再エクスポートしています。  
-詳細なAPIノートは `matplot_flex/README.md` を参照してください。
+未公開の場合は GitHub から直接インストールできます。
+```
+pip install "matplot-flex @ git+https://github.com/obitsu-jo/matplot-flex.git"
+```
 
 ## 対応環境
 - Python 3.10 以上
@@ -50,6 +49,17 @@ plot_on_module(
 
 fig.savefig("example.png", dpi=220)
 ```
+
+## 構成
+- `matplot_flex/config.py`: 軸/凡例/グリッド設定。
+- `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
+- `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
+- `matplot_flex/layout.py`: Figure/SubFigure 生成と `plot_on_module` の司令塔。
+- `main.py`: `modular_subplot_example.png` を生成するサンプル。
+- `smoke_test.py`: 生成確認の簡易テスト。
+
+公開APIは `matplot_flex/__init__.py` から再エクスポートしています。  
+詳細なAPIノートは `matplot_flex/README.md` を参照してください。
 
 ## サンプルの実行
 ```
@@ -94,6 +104,38 @@ SemVer（MAJOR.MINOR.PATCH）に従います。変更履歴は `CHANGELOG.md` �
 pip install -e .
 ```
 以降は同一環境の別ディレクトリから `import matplot_flex` できます。
+
+## PyPI 公開手順
+1. PyPI のアカウント作成と 2FA 設定
+2. `pyproject.toml` の `version` を更新
+3. 配布物を作成
+```
+python -m build
+```
+4. PyPI にアップロード
+```
+python -m twine upload dist/*
+```
+
+## 更新手順（リリース）
+1. 変更を反映
+2. `pyproject.toml` の `version` を更新
+3. `CHANGELOG.md` に変更内容を追記
+4. テストを実行
+```
+python -m pytest -q
+```
+5. ビルドとアップロード
+```
+rm -rf dist/
+python -m build
+python -m twine upload dist/*
+```
+6. 任意でタグを付ける
+```
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
 
 ## ライセンス
 MIT License（`LICENSE` を参照）

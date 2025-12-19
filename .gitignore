@@ -1,3 +1,7 @@
 .venv/
 __pycache__/
 modular_subplot_example.png
+dist/
+build/
+*.egg-info/
+.pytest_cache/

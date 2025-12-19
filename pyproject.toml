@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "matplot-flex"
-version = "0.1.0"
+version = "0.1.1"
 description = "Modular matplotlib plotting helpers"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -28,6 +28,8 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "build",
+    "twine",
 ]
 
 [project.urls]
