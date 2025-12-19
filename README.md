@@ -59,7 +59,7 @@ fig.savefig("example.png", dpi=220)
 - `smoke_test.py`: 生成確認の簡易テスト。
 
 公開APIは `matplot_flex/__init__.py` から再エクスポートしています。  
-詳細なAPIノートは `matplot_flex/README.md` を参照してください。
+詳細なAPIノートは `matplot_flex/README.md`、完全仕様は `docs/full_reference.md` を参照してください。
 
 ## サンプルの実行
 ```

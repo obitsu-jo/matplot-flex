@@ -104,8 +104,16 @@ def draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) ->
     return [horizontal_axis, horizontal_label, vertical_label, vertical_axis, main, title]
 
 
-def plot_template(title: str = "Modular Subplot Example", *, width: int = 1200, height: int = 800, ratios=[1, 5, 2]) -> tuple[plt.Figure, list[plt.Figure], plt.Figure]:
+def plot_template(
+    title: str = "Modular Subplot Example",
+    *,
+    width: int = 1200,
+    height: int = 800,
+    ratios: Optional[list[float]] = None,
+) -> tuple[plt.Figure, list[plt.Figure]]:
     fig = create_fig(width=width, height=height)
+    if ratios is None:
+        ratios = [1, 5, 2]
     figs = divide_fig_ratio(fig, "vertical", ratios=ratios)
     draw_text(figs[0].get_axes()[0], title, mode="fit", fontweight="bold", max_fontsize=36)
     return fig, figs
