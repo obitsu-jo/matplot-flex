@@ -1,0 +1,36 @@
+{
+  "name": "matplot-flex",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  "remoteUser": "vscode",
+
+  "mounts": [
+    "source=/mnt/wslg,target=/mnt/wslg,type=bind"
+    ],
+  "containerEnv": {
+    "PULSE_SERVER": "/mnt/wslg/PulseServer"
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "janisdd.vscode-edit-csv"
+      ]
+    }
+  },
+  
+  "remoteEnv": {
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "PULSE_SERVER": "/mnt/wslg/PulseServer"
+  }
+}
