@@ -14,6 +14,11 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
 - `LegendConfig(enabled=True, loc="best", ncol=1, frameon=True, fontsize=None, kwargs=None)`
   - `to_kwargs()` で `ax.legend` にそのまま渡せる dict を生成。
 
+### axes_utils.py
+- `get_primary_axes(fig, hide_axis_on_create=False)`
+  - Figure/SubFigure の主Axesを取得する。無ければ作成する。
+  - `hide_axis_on_create=True` の場合のみ、生成直後のAxesを `axis off` にする。
+
 ### renderers.py
 - 単系列レンダラー: `render_line`, `render_scatter`, `render_bar`
   - `render_bar` は幅未指定でもデータ間隔から 0.8 倍を推定（非等間隔・1点でも安全）。

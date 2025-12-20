@@ -17,6 +17,7 @@
 ## 公開API（`matplot_flex/__init__.py` で再エクスポート）
 
 - `AxisConfig`, `GridConfig`, `LegendConfig`
+- `get_primary_axes`
 - `Renderer`, `SeriesSpec`
 - `render_line`, `render_scatter`, `render_bar`, `render_multi`
 - `draw_text`, `draw_rounded_frame`, `format_params`, `sci_formatter`, `date_formatter`
@@ -81,6 +82,25 @@
 - `to_kwargs() -> dict[str, Any]`  
   `kwargs` をベースにしつつ、`loc/ncol/frameon` を `setdefault` で設定。  
   `fontsize` が指定されている場合のみ `fontsize` を付与。
+
+### `matplot_flex/axes_utils.py`
+
+#### `_ensure_primary_axes(fig) -> (Axes, bool)`
+
+**挙動**
+- `fig.get_axes()` が存在すれば先頭を返し、`created=False`。
+- 存在しなければ `fig.add_axes([0, 0, 1, 1])` で作成し、`created=True`。
+- 新規作成時は `ax.set_facecolor("none")` を適用。
+
+#### `get_primary_axes(fig, hide_axis_on_create=False) -> Axes`
+
+**引数**
+- `hide_axis_on_create: bool`  
+  `True` の場合、新規作成時のみ `axis off` を適用する。
+
+**挙動**
+- `_ensure_primary_axes` を呼び出して主Axesを取得する。
+- `hide_axis_on_create=True` かつ新規作成時のみ `ax.set_axis_off()` を実行する。
 
 ### `matplot_flex/renderers.py`
 
@@ -164,9 +184,9 @@
 #### `draw_rounded_frame(fig, bg_color="#eeeeee", edge_color="black") -> None`
 
 **挙動**
-- `fig`/block 全体に `[0,0,1,1]` の Axes を追加し `axis off`。
-- `FancyBboxPatch` による角丸矩形を描画。
-- `zorder=-1`, `clip_on=False` で背景として配置。
+- `get_primary_axes(fig, hide_axis_on_create=True)` で主Axesを取得する。
+- `FancyBboxPatch` による角丸矩形を描画する。
+- `zorder=-1`, `clip_on=False` で背景として配置する。
 
 #### `format_params(params: dict) -> str`
 
@@ -220,16 +240,16 @@ draw_text(
 
 **用途**
 - デバッグ用の分割枠の表示フラグ。  
-  `False` の場合は `create_frame` で spine を非表示にする。
+  `True` の場合のみ `draw_debug_frame` を呼ぶ。
 
-#### `create_frame(figs) -> None`
+#### `draw_debug_frame(figs) -> None`
 
 **引数**
 - `figs`: `Figure` または `SubFigure` の iterable
 
 **挙動**
-- 各 `fig` に `[0,0,1,1]` の Axes を追加し、目盛を消す。
-- `IS_VISIBLE_FRAME` が False の場合は spine を非表示。
+- `get_primary_axes` で主Axesを取得し、目盛を消した上で枠線を可視化する。
+- `IS_VISIBLE_FRAME` が True の場合のみ分割関数から呼ばれる。
 
 #### `get_pixel_size(fig) -> tuple[int, int]`
 
@@ -252,7 +272,7 @@ draw_text(
 **挙動**
 - `fig.subfigures` を使い比率分割する。  
   `wspace=0`, `hspace=0` を固定。
-- 分割後に `create_frame` を呼ぶ。
+- `IS_VISIBLE_FRAME` が True の場合のみ `draw_debug_frame` を呼ぶ。
 
 #### `divide_fig_pixel(fig, direction, sizes) -> list[SubFigure]`
 
@@ -263,7 +283,7 @@ draw_text(
 **挙動**
 - 親 Figure のピクセルサイズから `sizes` を比率に換算。
 - 指定合計が親サイズを超える場合は `ValueError`。
-- 分割後に `create_frame` を呼ぶ。
+- `IS_VISIBLE_FRAME` が True の場合のみ `draw_debug_frame` を呼ぶ。
 
 #### `get_padding_subfig(fig, padding=0.1) -> SubFigure`
 
@@ -271,6 +291,7 @@ draw_text(
 - 3x3 の GridSpec を作り、中央セルに SubFigure を作成する。
 - `padding` は割合指定。上下左右に padding を確保する。
 - `constrained_layout` 下でも padding を維持できる設計。
+- `IS_VISIBLE_FRAME` が True の場合のみ `draw_debug_frame` を呼ぶ。
 
 #### `draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) -> list[SubFigure]`
 
@@ -290,7 +311,7 @@ draw_text(
 **挙動**
 - `create_fig` で Figure を作成し、`divide_fig_ratio` で縦方向 3 分割する。
 - `ratios=None` の場合は `[1, 5, 2]` を使用する。
-- `figs[0]` の Axes にタイトルを `draw_text(mode="fit")` で描画する。
+- `get_primary_axes(figs[0], hide_axis_on_create=True)` にタイトルを `draw_text(mode="fit")` で描画する。
 - 戻り値は `(fig, figs)`（`figs` は 3 要素の SubFigure リスト）。
 
 #### `plot_on_module(...) -> None`
@@ -322,14 +343,14 @@ plot_on_module(
 - `series_specs: Optional[Iterable[SeriesSpec]]`
 
 **挙動**
-- `module_figs` から Axes を取得し、役割別に配置する。
+- `module_figs` から `get_primary_axes` で Axes を取得し、役割別に配置する。
 - 軸の最小最大値は `series_specs` があれば全系列を結合して算出。  
   それ以外は `x_data`/`y_data` から算出。
 - `AxisConfig.range` が指定されている場合はそちらを優先。
 - `AxisConfig.get_locator()` で目盛を算出。
 - `GridConfig.enabled` が True の場合、`axvline/axhline` でグリッド線を描画。
 - `renderer(ax_main, x_data, y_data)` を呼び出してデータ描画。
-- 主軸 (`ax_main`) は枠線を表示し、`xticks/yticks` は非表示。
+- 主軸 (`ax_main`) は `axis on` を明示し、`xticks/yticks` は非表示。
 - 目盛ラベルは専用の軸領域に `draw_text(mode="fixed")` で配置。
 - ラベル文字列は `AxisConfig.formatter` があればそれを使用。
 

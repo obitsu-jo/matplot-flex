@@ -11,6 +11,7 @@ from matplot_flex import (
     draw_text,
     format_params,
     get_padding_subfig,
+    get_primary_axes,
     plot_on_module,
     plot_template,
     render_line,
@@ -71,7 +72,7 @@ def main(output_path: str | Path = "modular_subplot_example.png"):
     math_fig = get_padding_subfig(math_fig, padding=0.1)
     draw_rounded_frame(math_fig)
     draw_text(
-        math_fig.get_axes()[0],
+        get_primary_axes(math_fig),
         "Equation:\n" r"$y = a\sin(bx)$" + "\n" r"$y = a\cos(bx)$",
         mode="fit",
         fontweight="bold",
@@ -82,7 +83,7 @@ def main(output_path: str | Path = "modular_subplot_example.png"):
     param_str = format_params(params)
     parameter_fig = get_padding_subfig(parameter_fig, padding=0.1)
     draw_rounded_frame(parameter_fig)
-    draw_text(parameter_fig.get_axes()[0], param_str, mode="fit", max_fontsize=24)
+    draw_text(get_primary_axes(parameter_fig), param_str, mode="fit", max_fontsize=24)
 
     out_path = Path(output_path)
     fig.savefig(out_path, dpi=220)

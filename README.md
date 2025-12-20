@@ -52,6 +52,7 @@ fig.savefig("example.png", dpi=220)
 
 ## 構成
 - `matplot_flex/config.py`: 軸/凡例/グリッド設定。
+- `matplot_flex/axes_utils.py`: Figure/SubFigure の主Axes取得ヘルパ。
 - `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
 - `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
 - `matplot_flex/layout.py`: Figure/SubFigure 生成と `plot_on_module` の司令塔。

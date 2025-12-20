@@ -4,13 +4,14 @@ import matplotlib.dates as mdates
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 
+from .axes_utils import get_primary_axes
+
 
 def draw_rounded_frame(fig, bg_color: str = "#eeeeee", edge_color: str = "black") -> None:
     """
     Figure(またはSubFigure)の領域いっぱいに、自動で角丸の矩形を描画する。
     """
-    ax = fig.add_axes([0, 0, 1, 1], zorder=-1)
-    ax.set_axis_off()
+    ax = get_primary_axes(fig, hide_axis_on_create=True)
 
     fancy_box = patches.FancyBboxPatch(
         (0, 0),
@@ -23,6 +24,7 @@ def draw_rounded_frame(fig, bg_color: str = "#eeeeee", edge_color: str = "black"
         mutation_scale=1,
         transform=ax.transAxes,
         clip_on=False,
+        zorder=-1,
     )
     ax.add_patch(fancy_box)
 

@@ -3,6 +3,7 @@ from typing import Iterable, Literal, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .axes_utils import get_primary_axes
 from .config import AxisConfig, GridConfig
 from .renderers import Renderer, SeriesSpec, render_line
 from .text_utils import draw_text
@@ -11,15 +12,15 @@ from .text_utils import draw_text
 IS_VISIBLE_FRAME = False
 
 
-def create_frame(figs) -> None:
+def draw_debug_frame(figs) -> None:
     for f in figs:
-        ax = f.add_axes([0, 0, 1, 1])
+        ax = get_primary_axes(f)
+        ax.set_axis_on()
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_facecolor("none")
-        if not IS_VISIBLE_FRAME:
-            for spine in ax.spines.values():
-                spine.set_visible(False)
+        for spine in ax.spines.values():
+            spine.set_visible(True)
 
 
 def get_pixel_size(fig) -> tuple[int, int]:
@@ -41,7 +42,8 @@ def divide_fig_ratio(fig, direction: Literal["horizontal", "vertical"], ratios: 
         figs = fig.subfigures(1, n_areas, width_ratios=ratios, wspace=0, hspace=0)
     else:
         figs = fig.subfigures(n_areas, 1, height_ratios=ratios, wspace=0, hspace=0)
-    create_frame(figs)
+    if IS_VISIBLE_FRAME:
+        draw_debug_frame(figs)
     return figs
 
 
@@ -68,7 +70,8 @@ def divide_fig_pixel(fig, direction: Literal["horizontal", "vertical"], sizes: l
     else:
         figs = fig.subfigures(n_areas, 1, height_ratios=ratios, wspace=0, hspace=0)
 
-    create_frame(figs)
+    if IS_VISIBLE_FRAME:
+        draw_debug_frame(figs)
     return figs
 
 
@@ -88,7 +91,8 @@ def get_padding_subfig(fig, padding: float = 0.1) -> plt.Figure:
 
     subfig = fig.add_subfigure(gs[1, 1])
     subfig.set_facecolor("none")
-    create_frame([subfig])
+    if IS_VISIBLE_FRAME:
+        draw_debug_frame([subfig])
     return subfig
 
 
@@ -115,7 +119,8 @@ def plot_template(
     if ratios is None:
         ratios = [1, 5, 2]
     figs = divide_fig_ratio(fig, "vertical", ratios=ratios)
-    draw_text(figs[0].get_axes()[0], title, mode="fit", fontweight="bold", max_fontsize=36)
+    ax_title = get_primary_axes(figs[0], hide_axis_on_create=True)
+    draw_text(ax_title, title, mode="fit", fontweight="bold", max_fontsize=36)
     return fig, figs
 
 
@@ -136,12 +141,12 @@ def plot_on_module(
     """
     fig_h_axis, fig_h_label, fig_v_label, fig_v_axis, fig_main, fig_title = module_figs
 
-    ax_h_axis = fig_h_axis.get_axes()[0]
-    ax_h_label = fig_h_label.get_axes()[0]
-    ax_v_label = fig_v_label.get_axes()[0]
-    ax_v_axis = fig_v_axis.get_axes()[0]
-    ax_main = fig_main.get_axes()[0]
-    ax_title = fig_title.get_axes()[0]
+    ax_h_axis = get_primary_axes(fig_h_axis, hide_axis_on_create=True)
+    ax_h_label = get_primary_axes(fig_h_label, hide_axis_on_create=True)
+    ax_v_label = get_primary_axes(fig_v_label, hide_axis_on_create=True)
+    ax_v_axis = get_primary_axes(fig_v_axis, hide_axis_on_create=True)
+    ax_main = get_primary_axes(fig_main)
+    ax_title = get_primary_axes(fig_title, hide_axis_on_create=True)
 
     x_cfg = x_axis
     y_cfg = y_axis
@@ -171,6 +176,7 @@ def plot_on_module(
     ax_main.set_ylim(y_min, y_max)
     ax_main.set_xscale(x_cfg.scale)
     ax_main.set_yscale(y_cfg.scale)
+    ax_main.set_axis_on()
 
     if grid_cfg.enabled:
         gx_locator = grid_cfg.x_locator or x_locator
