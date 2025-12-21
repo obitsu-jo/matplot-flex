@@ -306,6 +306,33 @@ draw_text(
   6. `title`
 - `plot_on_module` はこの順序を前提にする。
 
+### `matplot_flex/decorators.py`
+
+#### `apply_axis_limits(ax_main, x_cfg, y_cfg, x_min, x_max, y_min, y_max) -> None`
+- 主軸の範囲とスケールを設定し、`axis on` を明示する。
+
+#### `draw_grid(ax_main, x_min, x_max, y_min, y_max, grid_cfg, x_locator, y_locator) -> None`
+- `GridConfig.enabled` が True の場合、`axvline/axhline` でグリッド線を描画。
+- `GridConfig.x_locator`/`y_locator` が未指定なら軸側の locator を使う。
+
+#### `draw_axis_tick_labels(ax_h_axis, ax_v_axis, x_cfg, y_cfg, x_min, x_max, y_min, y_max, x_locator, y_locator) -> None`
+- 目盛ラベルを専用の軸領域に `draw_text(mode="fixed")` で配置する。
+- ラベル文字列は `AxisConfig.formatter` があればそれを使用する。
+
+#### `draw_axis_labels(ax_h_label, ax_v_label, x_cfg, y_cfg) -> None`
+- 軸ラベルを `draw_text(mode="fit")` で描画する。
+
+#### `draw_title(ax_title, title) -> None`
+- タイトルを `draw_text(mode="fit")` で描画する。
+
+#### `hide_main_ticks(ax_main) -> None`
+- 主軸の `xticks/yticks` を非表示にする。
+
+#### `style_main_spines(ax_main, color="black", linewidth=1.0) -> None`
+- 主軸のスパインを表示し、色と太さを揃える。
+
+### `matplot_flex/templates.py`
+
 #### `plot_template(title="Modular Subplot Example", *, width=1200, height=800, ratios=None) -> (fig, figs)`
 
 **挙動**

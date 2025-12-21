@@ -7,10 +7,9 @@ from .layout import (
     divide_fig_pixel,
     get_padding_subfig,
     draw_graph_module,
-    plot_template,
-    plot_on_module,
 )
 from .renderers import Renderer, SeriesSpec, render_bar, render_line, render_multi, render_scatter
+from .templates import plot_on_module, plot_template
 from .text_utils import date_formatter, draw_rounded_frame, draw_text, format_params, sci_formatter
 
 __all__ = [

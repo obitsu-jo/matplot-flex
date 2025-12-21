@@ -43,12 +43,19 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
   - `divide_fig_ratio(fig, direction, ratios)` / `divide_fig_pixel(fig, direction, sizes)`
   - `get_padding_subfig(fig, padding=0.1)`
   - `draw_graph_module(fig)`: 目盛・ラベル・タイトル・メイン領域をまとめた 6 サブ図を返す。
-- `plot_template(title, width=1200, height=800, ratios=None)`: タイトル/メイン/メタの 3 分割を `(fig, figs)` で返す（`ratios=None` の場合は `[1, 5, 2]`）。
+- デバッグ: `IS_VISIBLE_FRAME` を True にすると分割枠を表示。
+
+### decorators.py
+- 目盛・ラベル・グリッド・タイトルの装飾処理をまとめる。
+  - 軸/目盛ラベル描画、グリッド描画、主軸の外観調整など。
+
+### templates.py
+- `plot_template(title, width=1200, height=800, ratios=None)`
+  - タイトル/メイン/メタの 3 分割を `(fig, figs)` で返す（`ratios=None` の場合は `[1, 5, 2]`）。
 - 中央の司令塔:
   - `plot_on_module(module_figs, x_data, y_data, title, renderer=render_line, x_axis, y_axis, grid=None, series_specs=None)`
     - 軸レンジは `series_specs` があれば全系列から計算し、`AxisConfig.range` 指定があればそれを優先。
     - グリッドはデータより背面 (`zorder=0`) に描画し、目盛・ラベル・タイトルを各サブ領域に配置。
-- デバッグ: `IS_VISIBLE_FRAME` を True にすると分割枠を表示。
 
 ## 典型的な使い方の流れ
 ```python

@@ -55,7 +55,9 @@ fig.savefig("example.png", dpi=220)
 - `matplot_flex/axes_utils.py`: Figure/SubFigure の主Axes取得ヘルパ。
 - `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
 - `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
-- `matplot_flex/layout.py`: Figure/SubFigure 生成と `plot_on_module` の司令塔。
+- `matplot_flex/layout.py`: Figure/SubFigure 生成と分割ユーティリティ。
+- `matplot_flex/decorators.py`: 目盛/ラベル/グリッドなどの装飾処理。
+- `matplot_flex/templates.py`: `plot_template` / `plot_on_module` の合成処理。
 - `main.py`: `modular_subplot_example.png` を生成するサンプル。
 - `smoke_test.py`: 生成確認の簡易テスト。
 
