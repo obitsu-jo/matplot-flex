@@ -5,14 +5,20 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
 ## モジュール別の役割と主なAPI
 
 ### config.py
-- `AxisConfig(label="", range=None, scale="linear", formatter=None, locator=None, ticks=("nbins", 5))`
+- `AxisConfig(label="", range=None, pad=0.0, scale="linear", formatter=None, locator=None, ticks=("nbins", 5))`
   - `range` 未指定ならデータから min/max を自動決定。`series_specs` を渡した場合は全系列を対象に計算。
+  - `pad` は自動レンジ時に左右へ余白を加える比率（`range` 指定時は無効）。
   - `ticks`: `"nbins"`, `"interval"`, `"values"`, `"auto"`, または `None`（MaxNLocator）。`locator` 指定があればそちらを優先。
   - `scale`: `"linear"` / `"log"` などを `ax.set_{x,y}scale` に渡す。
 - `GridConfig(enabled=True, color="lightgray", linestyle="--", linewidth=0.8, x_locator=None, y_locator=None)`
   - `plot_on_module` でグリッド描画時に使用。Locator 未指定なら軸と同じものを利用。
-- `LegendConfig(enabled=True, loc="best", ncol=1, frameon=True, fontsize=None, kwargs=None)`
-  - `to_kwargs()` で `ax.legend` にそのまま渡せる dict を生成。
+- `LegendConfig(enabled=True, items=None, position=None, offset=(0.0, 0.0), target=None, loc="best", ncol=1, frameon=True, fontsize=None, kwargs=None)`
+  - `items` に `LegendItem` を渡すと `draw_legend` で描画される。
+  - `position` は `LegendPosition`（`"upper center"|"upper left"|"upper right"|"lower center"|"lower left"|"lower right"|"center left"|"center right"|"center"`）を想定。
+  - `offset` は Axes 座標で微調整するためのオフセット。
+  - `target` に Figure/SubFigure/Axes を指定すると描画先を変更できる。
+- `LegendItem(label, color, linestyle="-", marker=None, linewidth=2.0)`
+  - 凡例用の最小アイテム定義。
 
 ### axes_utils.py
 - `get_primary_axes(fig, hide_axis_on_create=False)`
@@ -25,14 +31,17 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
 - 複数系列:
   - `SeriesSpec(x, y, renderer=render_line, label=None, color=None, linestyle=None, marker=None, linewidth=None, kwargs=None)`
     - 長さ不一致なら例外。`to_kwargs` で描画引数を生成。
-  - `render_multi(ax, series_specs, legend=None, use_color_cycle=True)`
-    - ラベル付きなら凡例を描画。色は rcParams のサイクルを優先し、なければデフォルトカラーを使用。
+  - `render_multi(ax, series_specs, use_color_cycle=True)`
+    - 色は rcParams のサイクルを優先し、なければデフォルトカラーを使用。
 
 ### text_utils.py
-- `draw_text(ax, text, mode="fit"|"fixed", ...)`
+- `draw_text(ax, text, mode="fit"|"fixed", ..., zorder=None)`
   - `mode="fit"` で枠（デフォルトは Axes 全体）に収まるようフォントサイズを自動調整。`target_bbox` で合わせ先を変更可能。
-- `draw_rounded_frame(fig, bg_color="#eeeeee", edge_color="black")`
-  - SubFigure/Figure 全体に角丸背景を敷く。
+- `draw_text_on_fig(fig, text, ...)`
+  - Figure/SubFigure から主Axesを取得し、`hide_axis_on_create=True` で `draw_text` を適用する。
+- `draw_rounded_frame(fig, bg_color="#eeeeee", edge_color="black", zorder=-1)`
+  - SubFigure/Figure 全体に角丸背景を敷く。`zorder` で重ね順を調整できる。
+  - 例: `draw_rounded_frame(fig, zorder=0)` の上に `draw_text(..., zorder=1)` を重ねる。
 - `format_params(dict)`
   - パラメータ表示用の数式表記文字列を生成。
 - フォーマッタ: `sci_formatter(decimals=1)`, `date_formatter(fmt="%Y-%m-%d")`
@@ -49,19 +58,22 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
 ### decorators.py
 - 目盛・ラベル・グリッド・タイトルの装飾処理をまとめる。
   - 軸/目盛ラベル描画、グリッド描画、主軸の外観調整など。
+- `draw_legend(source_ax, legend, target=None)`
+  - `LegendItem` から凡例を描画する。`target` を指定すると描画先を変更できる。
 
 ### templates.py
 - `plot_template(title, width=1200, height=800, ratios=None)`
   - タイトル/メイン/メタの 3 分割を `(fig, figs)` で返す（`ratios=None` の場合は `[1, 5, 2]`）。
 - 中央の司令塔:
-  - `plot_on_module(module, x_data, y_data, title, renderer=render_line, x_axis, y_axis, grid=None, series_specs=None)`
+  - `plot_on_module(module, x_data, y_data, title, renderer=render_line, x_axis, y_axis, grid=None, legend=None, series_specs=None)`
     - 軸レンジは `series_specs` があれば全系列から計算し、`AxisConfig.range` 指定があればそれを優先。
     - グリッドはデータより背面 (`zorder=0`) に描画し、目盛・ラベル・タイトルを各サブ領域に配置。
+    - `legend` に `LegendConfig` を渡すと凡例を描画する。
 
 ## 典型的な使い方の流れ
 ```python
 from matplot_flex import (
-    AxisConfig, LegendConfig, SeriesSpec,
+    AxisConfig, LegendConfig, LegendItem, SeriesSpec,
     plot_template, divide_fig_ratio, draw_graph_module, plot_on_module,
     render_line, render_multi,
 )
@@ -75,6 +87,10 @@ series = [
     SeriesSpec(x=x, y=np.sin(x), renderer=render_line, label="sin"),
     SeriesSpec(x=x, y=np.cos(x), renderer=render_line, label="cos", linestyle="--"),
 ]
+legend_items = [
+    LegendItem(label="sin", color="tab:blue"),
+    LegendItem(label="cos", color="tab:orange", linestyle="--"),
+]
 
 module = draw_graph_module(left_fig)
 plot_on_module(
@@ -82,9 +98,10 @@ plot_on_module(
     x,
     series[0].y,
     "Sine & Cosine",
-    renderer=lambda ax, xx, yy: render_multi(ax, series, legend=LegendConfig()),
+    renderer=lambda ax, xx, yy: render_multi(ax, series),
     x_axis=AxisConfig(label="x"),
     y_axis=AxisConfig(label="value"),
+    legend=LegendConfig(items=legend_items, position="upper center", offset=(0.0, 0.02)),
     series_specs=series,  # 複数系列の範囲をカバー
 )
 fig.savefig("example.png", dpi=220)

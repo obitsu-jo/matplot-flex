@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .axes_utils import get_primary_axes
-from .config import AxisConfig, GridConfig
+from .config import AxisConfig, GridConfig, LegendConfig
 from .decorators import (
     apply_axis_limits,
     draw_axis_labels,
     draw_axis_tick_labels,
+    draw_legend,
     draw_grid,
     draw_title,
     hide_main_ticks,
@@ -40,6 +41,16 @@ def _resolve_data_range(
     return x_min, x_max, y_min, y_max
 
 
+def _apply_pad(min_val: float, max_val: float, pad: float) -> tuple[float, float]:
+    if pad <= 0:
+        return min_val, max_val
+    span = max_val - min_val
+    if span == 0:
+        return min_val, max_val
+    delta = span * pad
+    return min_val - delta, max_val + delta
+
+
 def plot_template(
     title: str = "Modular Subplot Example",
     *,
@@ -66,6 +77,7 @@ def plot_on_module(
     x_axis: AxisConfig,
     y_axis: AxisConfig,
     grid: Optional[GridConfig] = None,
+    legend: Optional[LegendConfig] = None,
     series_specs: Optional[Iterable[SeriesSpec]] = None,
 ) -> None:
     """
@@ -86,8 +98,12 @@ def plot_on_module(
 
     if x_cfg.range is not None:
         x_min, x_max = x_cfg.range
+    else:
+        x_min, x_max = _apply_pad(x_min, x_max, x_cfg.pad)
     if y_cfg.range is not None:
         y_min, y_max = y_cfg.range
+    else:
+        y_min, y_max = _apply_pad(y_min, y_max, y_cfg.pad)
 
     x_locator = x_cfg.get_locator()
     y_locator = y_cfg.get_locator()
@@ -97,6 +113,8 @@ def plot_on_module(
     renderer(ax_main, x_data, y_data)
     style_main_spines(ax_main)
     hide_main_ticks(ax_main)
+    if legend is not None:
+        draw_legend(ax_main, legend)
 
     draw_axis_tick_labels(ax_h_axis, ax_v_axis, x_cfg, y_cfg, x_min, x_max, y_min, y_max, x_locator, y_locator)
     draw_axis_labels(ax_h_label, ax_v_label, x_cfg, y_cfg)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Literal, Optional
 
 import matplotlib.ticker as mticker
 
@@ -8,6 +8,7 @@ import matplotlib.ticker as mticker
 class AxisConfig:
     label: str = ""
     range: Optional[tuple[float, float]] = None
+    pad: float = 0.0
     scale: str = "linear"  # 'linear' | 'log' | etc.
     formatter: Optional[Callable[[float], str]] = None
     locator: Optional[mticker.Locator] = None
@@ -30,6 +31,28 @@ class AxisConfig:
         return mticker.MaxNLocator(nbins=5)
 
 
+LegendPosition = Literal[
+    "upper center",
+    "upper left",
+    "upper right",
+    "lower center",
+    "lower left",
+    "lower right",
+    "center left",
+    "center right",
+    "center",
+]
+
+
+@dataclass
+class LegendItem:
+    label: str
+    color: str
+    linestyle: str = "-"
+    marker: Optional[str] = None
+    linewidth: float = 2.0
+
+
 @dataclass
 class GridConfig:
     enabled: bool = True
@@ -43,6 +66,10 @@ class GridConfig:
 @dataclass
 class LegendConfig:
     enabled: bool = True
+    items: list[LegendItem] = field(default_factory=list)
+    position: Optional[LegendPosition] = None
+    offset: tuple[float, float] = (0.0, 0.0)
+    target: Optional[Any] = None
     loc: str = "best"
     ncol: int = 1
     frameon: bool = True
@@ -59,4 +86,4 @@ class LegendConfig:
         return merged
 
 
-__all__ = ["AxisConfig", "GridConfig", "LegendConfig"]
+__all__ = ["AxisConfig", "LegendPosition", "LegendItem", "GridConfig", "LegendConfig"]

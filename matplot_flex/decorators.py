@@ -1,7 +1,10 @@
+from typing import Any, Optional
+
 import matplotlib.ticker as mticker
 from matplotlib.axes import Axes
+from matplotlib.lines import Line2D
 
-from .config import AxisConfig, GridConfig
+from .config import AxisConfig, GridConfig, LegendConfig, LegendItem, LegendPosition
 from .text_utils import draw_text
 
 
@@ -123,6 +126,66 @@ def style_main_spines(ax_main: Axes, *, color: str = "black", linewidth: float =
         spine.set_linewidth(linewidth)
 
 
+def _resolve_legend_position(position: LegendPosition, offset: tuple[float, float]) -> tuple[str, tuple[float, float]]:
+    positions = {
+        "upper center": ("upper center", (0.5, 1.0)),
+        "upper left": ("upper left", (0.0, 1.0)),
+        "upper right": ("upper right", (1.0, 1.0)),
+        "lower center": ("lower center", (0.5, 0.0)),
+        "lower left": ("lower left", (0.0, 0.0)),
+        "lower right": ("lower right", (1.0, 0.0)),
+        "center left": ("center left", (0.0, 0.5)),
+        "center right": ("center right", (1.0, 0.5)),
+        "center": ("center", (0.5, 0.5)),
+    }
+    if position not in positions:
+        raise ValueError(f"Unknown legend position: {position}")
+    loc, anchor = positions[position]
+    return loc, (anchor[0] + offset[0], anchor[1] + offset[1])
+
+
+def _resolve_legend_target(source_ax: Axes, legend: LegendConfig, target: Optional[Any]) -> Axes:
+    target_obj = target if target is not None else legend.target
+    if target_obj is None:
+        return source_ax
+    if isinstance(target_obj, Axes):
+        return target_obj
+    from .axes_utils import get_primary_axes
+
+    return get_primary_axes(target_obj, hide_axis_on_create=True)
+
+
+def _legend_handles(items: list[LegendItem]) -> tuple[list[Line2D], list[str]]:
+    handles = []
+    labels = []
+    for item in items:
+        handles.append(
+            Line2D(
+                [0],
+                [0],
+                color=item.color,
+                linestyle=item.linestyle,
+                marker=item.marker,
+                linewidth=item.linewidth,
+            )
+        )
+        labels.append(item.label)
+    return handles, labels
+
+
+def draw_legend(source_ax: Axes, legend: LegendConfig, *, target: Optional[Any] = None) -> None:
+    if not legend.enabled or not legend.items:
+        return
+    target_ax = _resolve_legend_target(source_ax, legend, target)
+    handles, labels = _legend_handles(legend.items)
+    legend_kwargs = legend.to_kwargs()
+    if legend.position is not None:
+        loc, anchor = _resolve_legend_position(legend.position, legend.offset)
+        legend_kwargs["loc"] = loc
+        legend_kwargs["bbox_to_anchor"] = anchor
+    target_ax.legend(handles, labels, **legend_kwargs)
+
+
 __all__ = [
     "apply_axis_limits",
     "draw_grid",
@@ -131,4 +194,5 @@ __all__ = [
     "draw_title",
     "hide_main_ticks",
     "style_main_spines",
+    "draw_legend",
 ]

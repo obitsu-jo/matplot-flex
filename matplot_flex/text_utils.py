@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from .axes_utils import get_primary_axes
 
 
-def draw_rounded_frame(fig, bg_color: str = "#eeeeee", edge_color: str = "black") -> None:
+def draw_rounded_frame(fig, bg_color: str = "#eeeeee", edge_color: str = "black", zorder: float = -1) -> None:
     """
     Figure(またはSubFigure)の領域いっぱいに、自動で角丸の矩形を描画する。
     """
@@ -24,7 +24,7 @@ def draw_rounded_frame(fig, bg_color: str = "#eeeeee", edge_color: str = "black"
         mutation_scale=1,
         transform=ax.transAxes,
         clip_on=False,
-        zorder=-1,
+        zorder=zorder,
     )
     ax.add_patch(fancy_box)
 
@@ -60,6 +60,7 @@ def draw_text(
     color: str = "black",
     fontweight: str = "normal",
     target_bbox: Optional[Any] = None,
+    zorder: Optional[float] = None,
 ) -> plt.Text:
     """
     汎用テキスト描画。mode="fixed" なら指定フォントサイズ、"fit" なら枠に収まるよう自動調整。
@@ -68,10 +69,7 @@ def draw_text(
     if transform is None:
         transform = ax.transAxes
 
-    t = ax.text(
-        x,
-        y,
-        text,
+    text_kwargs = dict(
         ha=ha,
         va=va,
         rotation=rotation,
@@ -80,6 +78,9 @@ def draw_text(
         fontweight=fontweight,
         transform=transform,
     )
+    if zorder is not None:
+        text_kwargs["zorder"] = zorder
+    t = ax.text(x, y, text, **text_kwargs)
     if mode == "fixed":
         return t
 
@@ -101,6 +102,14 @@ def draw_text(
     return t
 
 
+def draw_text_on_fig(fig, text: str, **kwargs) -> plt.Text:
+    """
+    Figure/SubFigure から主Axesを取得し、その上に draw_text を適用する。
+    """
+    ax = get_primary_axes(fig, hide_axis_on_create=True)
+    return draw_text(ax, text, **kwargs)
+
+
 def sci_formatter(decimals: int = 1) -> Callable[[float], str]:
     """指数表記を返すフォーマッタのファクトリ"""
     def _fmt(val: float) -> str:
@@ -119,6 +128,7 @@ __all__ = [
     "draw_rounded_frame",
     "format_params",
     "draw_text",
+    "draw_text_on_fig",
     "sci_formatter",
     "date_formatter",
 ]

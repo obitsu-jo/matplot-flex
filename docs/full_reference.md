@@ -16,11 +16,11 @@
 
 ## 公開API（`matplot_flex/__init__.py` で再エクスポート）
 
-- `AxisConfig`, `GridConfig`, `LegendConfig`
+- `AxisConfig`, `LegendPosition`, `LegendItem`, `GridConfig`, `LegendConfig`
 - `get_primary_axes`
 - `Renderer`, `SeriesSpec`
 - `render_line`, `render_scatter`, `render_bar`, `render_multi`
-- `draw_text`, `draw_rounded_frame`, `format_params`, `sci_formatter`, `date_formatter`
+- `draw_text`, `draw_text_on_fig`, `draw_rounded_frame`, `draw_legend`, `format_params`, `sci_formatter`, `date_formatter`
 - `IS_VISIBLE_FRAME`
 - `GraphModule`
 - `create_fig`, `divide_fig_ratio`, `divide_fig_pixel`, `get_padding_subfig`
@@ -37,6 +37,8 @@
   軸ラベル文字列。
 - `range: Optional[tuple[float, float]] = None`  
   使う場合は（min, max）を固定する。未指定ならデータから算出。
+- `pad: float = 0.0`  
+  自動レンジ時に余白を加える比率。`range` 指定時は適用しない。
 - `scale: str = "linear"`  
   `"linear"`, `"log"` 等を `ax.set_{x,y}scale` に渡す。
 - `formatter: Optional[Callable[[float], str]] = None`  
@@ -69,10 +71,32 @@
 **用途**
 - `plot_on_module` 内のグリッド描画で利用する。`x_locator`/`y_locator` 未指定なら `AxisConfig.get_locator()` の値を使う。
 
+#### `LegendPosition`（Literal）
+
+**値**
+- `"upper center" | "upper left" | "upper right" | "lower center" | "lower left" | "lower right" | "center left" | "center right" | "center"`
+
+#### `LegendItem`（dataclass）
+
+**フィールド**
+- `label: str`
+- `color: str`
+- `linestyle: str = "-"`  
+  凡例の線種を指定する。
+- `marker: Optional[str] = None`  
+  マーカーを指定する。
+- `linewidth: float = 2.0`  
+  線幅を指定する。
+
 #### `LegendConfig`（dataclass）
 
 **フィールド**
 - `enabled: bool = True`
+- `items: list[LegendItem] = []`
+- `position: Optional[str] = None`
+- `offset: tuple[float, float] = (0.0, 0.0)`
+  `position` 指定時に Axes 座標で加算する。
+- `target: Optional[Any] = None`
 - `loc: str = "best"`
 - `ncol: int = 1`
 - `frameon: bool = True`
@@ -166,11 +190,10 @@
   取得できない場合は `plt.rcParams["axes.prop_cycle"]` を利用。  
   それでも取得できない場合は `SeriesSpec.DEFAULT_COLORS` を使う。
 
-#### `render_multi(ax, series_specs, legend=None, use_color_cycle=True) -> None`
+#### `render_multi(ax, series_specs, use_color_cycle=True) -> None`
 
 **引数**
 - `series_specs: Iterable[SeriesSpec]`
-- `legend: Optional[LegendConfig] = None`
 - `use_color_cycle: bool = True`
 
 **挙動**
@@ -178,16 +201,19 @@
 - 色は `use_color_cycle` が True の場合、`_color_cycle(ax)` を優先。  
   取得できない場合や `None` の場合は `SeriesSpec.DEFAULT_COLORS` を用いる。
 - 線種は `SeriesSpec.DEFAULT_LINESTYLES` のサイクルを使用。
-- `legend` が指定され、かつ `legend.enabled` で、ラベル付き系列がある場合のみ凡例を描画。
+- 凡例描画は行わない（`draw_legend` を利用する）。
 
 ### `matplot_flex/text_utils.py`
 
-#### `draw_rounded_frame(fig, bg_color="#eeeeee", edge_color="black") -> None`
+#### `draw_rounded_frame(fig, bg_color="#eeeeee", edge_color="black", zorder=-1) -> None`
 
 **挙動**
 - `get_primary_axes(fig, hide_axis_on_create=True)` で主Axesを取得する。
 - `FancyBboxPatch` による角丸矩形を描画する。
-- `zorder=-1`, `clip_on=False` で背景として配置する。
+- `zorder` を指定して重ね順を制御できる。既定は `-1`。
+- `clip_on=False` で背景として配置する。
+- 例: `draw_rounded_frame(fig, zorder=0)` の上に `draw_text(..., zorder=1)` を重ねる。
+- `zorder` は同一Axes内でのみ有効で、SubFigureを跨ぐ場合は描画順を制御できない。
 
 #### `format_params(params: dict) -> str`
 
@@ -214,16 +240,24 @@ draw_text(
     color="black",
     fontweight="normal",
     target_bbox=None,
+    zorder=None,
 ) -> matplotlib.text.Text
 ```
 
 **挙動**
 - `transform` 未指定時は `ax.transAxes` を使う。
+- `zorder` が指定された場合のみ `ax.text` に渡す（未指定時は既定挙動）。
 - `mode="fixed"` の場合は指定 `fontsize` のまま描画して返す。
 - `mode="fit"` の場合はテキストとターゲットの bbox を取得し、  
   比率 `min(width_ratio, height_ratio) * padding` でフォントサイズを調整。
 - `min_fontsize` と `max_fontsize` の範囲にクランプする。
 - bbox 幅/高さが 0 の場合は調整せず返す。
+
+#### `draw_text_on_fig(fig, text, **kwargs) -> matplotlib.text.Text`
+
+**挙動**
+- `get_primary_axes(fig, hide_axis_on_create=True)` で主Axesを取得する。
+- `draw_text` に引数をそのまま渡して描画する。
 
 #### `sci_formatter(decimals=1) -> Callable[[float], str]`
 
@@ -336,6 +370,11 @@ draw_text(
 #### `style_main_spines(ax_main, color="black", linewidth=1.0) -> None`
 - 主軸のスパインを表示し、色と太さを揃える。
 
+#### `draw_legend(source_ax, legend, target=None) -> None`
+- `LegendItem` から凡例用のハンドルを作り、`LegendConfig` に従って描画する。
+- `target` を指定した場合はそのFigure/SubFigure/Axes上に描画する。
+- `position` 指定時は `loc` より優先され、`offset` は Axes 座標で加算される。
+
 ### `matplot_flex/templates.py`
 
 #### `plot_template(title="Modular Subplot Example", *, width=1200, height=800, ratios=None) -> (fig, figs)`
@@ -360,6 +399,7 @@ plot_on_module(
     x_axis,
     y_axis,
     grid=None,
+    legend=None,
     series_specs=None,
 ) -> None
 ```
@@ -372,6 +412,7 @@ plot_on_module(
 - `renderer: Renderer`
 - `x_axis: AxisConfig`, `y_axis: AxisConfig`
 - `grid: Optional[GridConfig]`
+- `legend: Optional[LegendConfig]`
 - `series_specs: Optional[Iterable[SeriesSpec]]`
 
 **挙動**
@@ -379,9 +420,11 @@ plot_on_module(
 - 軸の最小最大値は `series_specs` があれば全系列を結合して算出。  
   それ以外は `x_data`/`y_data` から算出。
 - `AxisConfig.range` が指定されている場合はそちらを優先。
+- `AxisConfig.range` 未指定時は `AxisConfig.pad` に応じて余白を加える。
 - `AxisConfig.get_locator()` で目盛を算出。
 - `GridConfig.enabled` が True の場合、`axvline/axhline` でグリッド線を描画。
 - `renderer(ax_main, x_data, y_data)` を呼び出してデータ描画。
+- `LegendConfig` が指定され、`items` があれば `draw_legend` で凡例を描画。
 - 主軸 (`ax_main`) は `axis on` を明示し、`xticks/yticks` は非表示。
 - 目盛ラベルは専用の軸領域に `draw_text(mode="fixed")` で配置。
 - ラベル文字列は `AxisConfig.formatter` があればそれを使用。

@@ -20,7 +20,7 @@ pip install "matplot-flex @ git+https://github.com/obitsu-jo/matplot-flex.git"
 ```python
 import numpy as np
 from matplot_flex import (
-    AxisConfig, LegendConfig, SeriesSpec,
+    AxisConfig, LegendConfig, LegendItem, SeriesSpec,
     plot_template, divide_fig_ratio, draw_graph_module, plot_on_module,
     render_line, render_multi,
 )
@@ -35,6 +35,10 @@ series = [
     SeriesSpec(x=x, y=y1, renderer=render_line, label="sin"),
     SeriesSpec(x=x, y=y2, renderer=render_line, label="cos", linestyle="--"),
 ]
+legend_items = [
+    LegendItem(label="sin", color="tab:blue"),
+    LegendItem(label="cos", color="tab:orange", linestyle="--"),
+]
 
 module = draw_graph_module(left_fig)
 plot_on_module(
@@ -42,9 +46,10 @@ plot_on_module(
     x,
     y1,
     "Sine & Cosine",
-    renderer=lambda ax, xx, yy: render_multi(ax, series, legend=LegendConfig()),
+    renderer=lambda ax, xx, yy: render_multi(ax, series),
     x_axis=AxisConfig(label="x"),
     y_axis=AxisConfig(label="value"),
+    legend=LegendConfig(items=legend_items, position="upper center", offset=(0.0, 0.02)),
     series_specs=series,  # ensures axes cover all series
 )
 
@@ -52,9 +57,9 @@ fig.savefig("example.png", dpi=220)
 ```
 
 ## 構成
-- `matplot_flex/config.py`: 軸/凡例/グリッド設定。
+- `matplot_flex/config.py`: 軸/凡例/グリッド設定（`AxisConfig.pad` による余白指定を含む）。
 - `matplot_flex/axes_utils.py`: Figure/SubFigure の主Axes取得ヘルパ。
-- `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム、日付/指数フォーマッタ。
+- `matplot_flex/text_utils.py`: テキストフィット、パラメータ整形、角丸フレーム（zorder指定）、日付/指数フォーマッタ。
 - `matplot_flex/renderers.py`: 折れ線/散布/棒グラフ、複数系列補助、`SeriesSpec`。
 - `matplot_flex/layout.py`: Figure/SubFigure 生成と分割ユーティリティ。
 - `matplot_flex/decorators.py`: 目盛/ラベル/グリッドなどの装飾処理。

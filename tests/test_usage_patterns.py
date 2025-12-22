@@ -12,9 +12,12 @@ import numpy as np
 from matplot_flex import (
     AxisConfig,
     LegendConfig,
+    LegendItem,
     SeriesSpec,
     date_formatter,
     draw_graph_module,
+    draw_rounded_frame,
+    draw_text_on_fig,
     plot_on_module,
     plot_template,
     render_bar,
@@ -38,14 +41,19 @@ def test_multi_series_line() -> None:
         SeriesSpec(x=x, y=y1, renderer=render_line, label="sin"),
         SeriesSpec(x=x, y=y2, renderer=render_line, label="cos", linestyle="--"),
     ]
+    legend_items = [
+        LegendItem(label="sin", color="tab:blue"),
+        LegendItem(label="cos", color="tab:orange", linestyle="--"),
+    ]
     plot_on_module(
         module,
         x,
         y1,
         "Sine & Cosine",
-        renderer=lambda ax, xx, yy: render_multi(ax, series, legend=LegendConfig()),
+        renderer=lambda ax, xx, yy: render_multi(ax, series),
         x_axis=AxisConfig(label="x"),
         y_axis=AxisConfig(label="value"),
+        legend=LegendConfig(items=legend_items, position="upper center", offset=(0.0, 0.02)),
         series_specs=series,
     )
     _render_to_buffer(fig)
@@ -86,5 +94,17 @@ def test_date_axis_formatter() -> None:
         x_axis=AxisConfig(label="date", formatter=date_formatter("%Y-%m-%d"), ticks=("nbins", 4)),
         y_axis=AxisConfig(label="value"),
     )
+    _render_to_buffer(fig)
+    plt.close(fig)
+
+
+def test_draw_text_on_fig_zorder() -> None:
+    fig = plt.figure()
+    draw_rounded_frame(fig, zorder=0)
+    text = draw_text_on_fig(fig, "Z", mode="fixed", zorder=1)
+    ax = fig.get_axes()[0]
+    assert not ax.axison
+    assert ax.patches[-1].get_zorder() == 0
+    assert text.get_zorder() == 1
     _render_to_buffer(fig)
     plt.close(fig)

@@ -5,8 +5,6 @@ from typing import Any, Callable, ClassVar, Iterable, Iterator, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .config import LegendConfig
-
 Renderer = Callable[[plt.Axes, np.ndarray, np.ndarray], None]
 
 
@@ -117,15 +115,12 @@ def render_multi(
     ax: plt.Axes,
     series_specs: Iterable[SeriesSpec],
     *,
-    legend: Optional[LegendConfig] = None,
     use_color_cycle: bool = True,
 ) -> None:
     """
     単系列用レンダラーを組み合わせて複数系列を描く薄いラッパー。
-    legend: LegendConfigを渡すと凡例を描画。Noneなら表示しない。
     use_color_cycle: 色指定がないSeriesでcolor cycleを利用するか。
     """
-    has_label = False
     color_cycle = _color_cycle(ax) if use_color_cycle else None
     linestyle_cycle = itertools.cycle(SeriesSpec.DEFAULT_LINESTYLES)
     series_list = list(series_specs)
@@ -140,11 +135,7 @@ def render_multi(
             default_color = SeriesSpec.DEFAULT_COLORS[idx % len(SeriesSpec.DEFAULT_COLORS)]
         default_linestyle = next(linestyle_cycle)
         kwargs = spec.to_kwargs(default_color=default_color, default_linestyle=default_linestyle)
-        if kwargs.get("label"):
-            has_label = True
         spec.renderer(ax, spec.x, spec.y, **kwargs)
-    if legend and legend.enabled and has_label:
-        ax.legend(**legend.to_kwargs())
 
 
 __all__ = [
