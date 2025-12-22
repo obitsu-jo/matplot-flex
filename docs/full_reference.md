@@ -22,6 +22,7 @@
 - `render_line`, `render_scatter`, `render_bar`, `render_multi`
 - `draw_text`, `draw_rounded_frame`, `format_params`, `sci_formatter`, `date_formatter`
 - `IS_VISIBLE_FRAME`
+- `GraphModule`
 - `create_fig`, `divide_fig_ratio`, `divide_fig_pixel`, `get_padding_subfig`
 - `draw_graph_module`, `plot_template`, `plot_on_module`
 
@@ -242,6 +243,16 @@ draw_text(
 - デバッグ用の分割枠の表示フラグ。  
   `True` の場合のみ `draw_debug_frame` を呼ぶ。
 
+#### `GraphModule`（dataclass, frozen）
+
+**フィールド**
+- `x_axis`: 横軸目盛領域の SubFigure
+- `x_label`: 横軸ラベル領域の SubFigure
+- `y_label`: 縦軸ラベル領域の SubFigure
+- `y_axis`: 縦軸目盛領域の SubFigure
+- `main`: メイン描画領域の SubFigure
+- `title`: タイトル領域の SubFigure
+
 #### `draw_debug_frame(figs) -> None`
 
 **引数**
@@ -293,18 +304,12 @@ draw_text(
 - `constrained_layout` 下でも padding を維持できる設計。
 - `IS_VISIBLE_FRAME` が True の場合のみ `draw_debug_frame` を呼ぶ。
 
-#### `draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) -> list[SubFigure]`
+#### `draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) -> GraphModule`
 
 **挙動**
 - `fig` をサブ図に分割し、タイトル/ラベル/軸/メイン領域を作る。
-- 戻り値の順番:
-  1. `horizontal_axis`
-  2. `horizontal_label`
-  3. `vertical_label`
-  4. `vertical_axis`
-  5. `main`
-  6. `title`
-- `plot_on_module` はこの順序を前提にする。
+- 戻り値は `GraphModule`。各領域はフィールドで参照する。
+  - `x_axis`, `x_label`, `y_label`, `y_axis`, `main`, `title`
 
 ### `matplot_flex/decorators.py`
 
@@ -346,7 +351,7 @@ draw_text(
 **シグネチャ**
 ```
 plot_on_module(
-    module_figs,
+    module,
     x_data,
     y_data,
     title,
@@ -360,8 +365,8 @@ plot_on_module(
 ```
 
 **引数**
-- `module_figs: list[SubFigure]`  
-  `draw_graph_module` が返す 6 要素リスト。
+- `module: GraphModule`  
+  `draw_graph_module` が返すモジュール構造。
 - `x_data`, `y_data`: `numpy.ndarray`
 - `title: str`
 - `renderer: Renderer`
@@ -370,7 +375,7 @@ plot_on_module(
 - `series_specs: Optional[Iterable[SeriesSpec]]`
 
 **挙動**
-- `module_figs` から `get_primary_axes` で Axes を取得し、役割別に配置する。
+- `module` から `get_primary_axes` で Axes を取得し、役割別に配置する。
 - 軸の最小最大値は `series_specs` があれば全系列を結合して算出。  
   それ以外は `x_data`/`y_data` から算出。
 - `AxisConfig.range` が指定されている場合はそちらを優先。
@@ -414,7 +419,7 @@ python smoke_test.py
 
 ## 既知の注意点
 
-- `plot_on_module` は `draw_graph_module` の戻り順序を前提にする。  
-  他の順序で渡すと表示が崩れる。
+- `plot_on_module` は `GraphModule` を前提にする。  
+  `draw_graph_module` 以外で作成した場合はフィールドの意味が一致している必要がある。
 - `render_bar` の幅推定は `x` が非等間隔の場合でも最小正間隔を採用するため、意図せず細い棒になる可能性がある。
 - `draw_text(mode="fit")` は `fig.canvas.draw()` を行うため、大量に呼ぶと時間がかかる。

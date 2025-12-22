@@ -14,7 +14,7 @@ from .decorators import (
     hide_main_ticks,
     style_main_spines,
 )
-from .layout import create_fig, divide_fig_ratio
+from .layout import GraphModule, create_fig, divide_fig_ratio
 from .renderers import Renderer, SeriesSpec, render_line
 from .text_utils import draw_text
 
@@ -57,7 +57,7 @@ def plot_template(
 
 
 def plot_on_module(
-    module_figs: list[plt.Figure],
+    module: GraphModule,
     x_data: np.ndarray,
     y_data: np.ndarray,
     title: str,
@@ -69,16 +69,14 @@ def plot_on_module(
     series_specs: Optional[Iterable[SeriesSpec]] = None,
 ) -> None:
     """
-    作成したモジュール構造(figsリスト)に対して、データと装飾を流し込む関数。
+    作成したモジュール構造(GraphModule)に対して、データと装飾を流し込む関数。
     """
-    fig_h_axis, fig_h_label, fig_v_label, fig_v_axis, fig_main, fig_title = module_figs
-
-    ax_h_axis = get_primary_axes(fig_h_axis, hide_axis_on_create=True)
-    ax_h_label = get_primary_axes(fig_h_label, hide_axis_on_create=True)
-    ax_v_label = get_primary_axes(fig_v_label, hide_axis_on_create=True)
-    ax_v_axis = get_primary_axes(fig_v_axis, hide_axis_on_create=True)
-    ax_main = get_primary_axes(fig_main)
-    ax_title = get_primary_axes(fig_title, hide_axis_on_create=True)
+    ax_h_axis = get_primary_axes(module.x_axis, hide_axis_on_create=True)
+    ax_h_label = get_primary_axes(module.x_label, hide_axis_on_create=True)
+    ax_v_label = get_primary_axes(module.y_label, hide_axis_on_create=True)
+    ax_v_axis = get_primary_axes(module.y_axis, hide_axis_on_create=True)
+    ax_main = get_primary_axes(module.main)
+    ax_title = get_primary_axes(module.title, hide_axis_on_create=True)
 
     x_cfg = x_axis
     y_cfg = y_axis

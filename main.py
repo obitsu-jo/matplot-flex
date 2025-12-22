@@ -32,7 +32,7 @@ def main(output_path: str | Path = "modular_subplot_example.png"):
     y_cos = np.cos(x)
 
     # 左側: sin と cos の重ね書きサンプル
-    plot_figs = draw_graph_module(main_figs[0])
+    module = draw_graph_module(main_figs[0])
     series = [
         SeriesSpec(x=x, y=y_sin, renderer=render_line, label="sin", color="tab:blue", linewidth=2.2),
         SeriesSpec(x=x, y=y_cos, renderer=render_line, label="cos", color="tab:orange", linewidth=2.2, linestyle="--"),
@@ -43,7 +43,7 @@ def main(output_path: str | Path = "modular_subplot_example.png"):
 
     y_axis_config = AxisConfig(label="value", range=y_range, locator=mticker.FixedLocator(np.linspace(-1, 1, 5)))
     plot_on_module(
-        plot_figs,
+        module,
         x,
         y_sin,
         "Sine & Cosine",
@@ -54,10 +54,10 @@ def main(output_path: str | Path = "modular_subplot_example.png"):
     )
 
     # 右側: 従来の単系列描画（散布図）
-    plot_figs = draw_graph_module(main_figs[1])
+    module = draw_graph_module(main_figs[1])
     y_axis_config.label = "amplitude"
     plot_on_module(
-        plot_figs,
+        module,
         x,
         y_sin,
         "Sine Wave Scatter",

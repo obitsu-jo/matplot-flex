@@ -30,7 +30,7 @@ def _render_to_buffer(fig) -> None:
 
 def test_multi_series_line() -> None:
     fig, figs = plot_template("multi-series")
-    module_figs = draw_graph_module(figs[1])
+    module = draw_graph_module(figs[1])
     x = np.linspace(0, 10, 100)
     y1 = np.sin(x)
     y2 = np.cos(x)
@@ -39,7 +39,7 @@ def test_multi_series_line() -> None:
         SeriesSpec(x=x, y=y2, renderer=render_line, label="cos", linestyle="--"),
     ]
     plot_on_module(
-        module_figs,
+        module,
         x,
         y1,
         "Sine & Cosine",
@@ -54,11 +54,11 @@ def test_multi_series_line() -> None:
 
 def test_bar_default_width() -> None:
     fig, figs = plot_template("bar")
-    module_figs = draw_graph_module(figs[1])
+    module = draw_graph_module(figs[1])
     x = np.array([0.0, 0.5, 2.0, 3.5])
     y = np.array([1.0, 2.5, 1.5, 3.0])
     plot_on_module(
-        module_figs,
+        module,
         x,
         y,
         "Bar",
@@ -72,13 +72,13 @@ def test_bar_default_width() -> None:
 
 def test_date_axis_formatter() -> None:
     fig, figs = plot_template("date-axis")
-    module_figs = draw_graph_module(figs[1])
+    module = draw_graph_module(figs[1])
     base = datetime(2025, 1, 1)
     dates = [base + timedelta(days=delta) for delta in range(5)]
     x = mdates.date2num(dates)
     y = np.array([0.5, 1.2, 0.9, 1.5, 1.1])
     plot_on_module(
-        module_figs,
+        module,
         x,
         y,
         "Date Axis",

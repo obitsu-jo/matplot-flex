@@ -2,6 +2,7 @@ from .axes_utils import get_primary_axes
 from .config import AxisConfig, GridConfig, LegendConfig
 from .layout import (
     IS_VISIBLE_FRAME,
+    GraphModule,
     create_fig,
     divide_fig_ratio,
     divide_fig_pixel,
@@ -29,6 +30,7 @@ __all__ = [
     "sci_formatter",
     "date_formatter",
     "IS_VISIBLE_FRAME",
+    "GraphModule",
     "create_fig",
     "divide_fig_ratio",
     "divide_fig_pixel",

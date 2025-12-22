@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Literal, Optional
 
 import matplotlib.pyplot as plt
@@ -6,6 +7,16 @@ from .axes_utils import get_primary_axes
 
 # デバッグ用に枠を表示する場合は True にする
 IS_VISIBLE_FRAME = False
+
+
+@dataclass(frozen=True)
+class GraphModule:
+    x_axis: plt.Figure
+    x_label: plt.Figure
+    y_label: plt.Figure
+    y_axis: plt.Figure
+    main: plt.Figure
+    title: plt.Figure
 
 
 def draw_debug_frame(figs) -> None:
@@ -92,7 +103,7 @@ def get_padding_subfig(fig, padding: float = 0.1) -> plt.Figure:
     return subfig
 
 
-def draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) -> list[plt.Figure]:
+def draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) -> GraphModule:
     parent_width, parent_height = get_pixel_size(fig)
     title_width = int(min(parent_width, parent_height) * title_ratio)
     label_width = int(min(parent_width, parent_height) * label_ratio)
@@ -101,11 +112,19 @@ def draw_graph_module(fig, title_ratio=0.2, label_ratio=0.1, axis_ratio=0.05) ->
     _, lower, _ = divide_fig_pixel(lower, "horizontal", sizes=[axis_width + label_width, None, axis_width + label_width])
     horizontal_axis, horizontal_label, title = divide_fig_pixel(lower, "vertical", sizes=[axis_width, label_width, title_width])
     vertical_label, vertical_axis, main, _ = divide_fig_pixel(upper, "horizontal", sizes=[label_width, axis_width, None, axis_width + label_width])
-    return [horizontal_axis, horizontal_label, vertical_label, vertical_axis, main, title]
+    return GraphModule(
+        x_axis=horizontal_axis,
+        x_label=horizontal_label,
+        y_label=vertical_label,
+        y_axis=vertical_axis,
+        main=main,
+        title=title,
+    )
 
 
 __all__ = [
     "IS_VISIBLE_FRAME",
+    "GraphModule",
     "create_fig",
     "divide_fig_ratio",
     "divide_fig_pixel",

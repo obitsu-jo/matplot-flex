@@ -42,7 +42,8 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
   - `create_fig(width=1280, height=720)`
   - `divide_fig_ratio(fig, direction, ratios)` / `divide_fig_pixel(fig, direction, sizes)`
   - `get_padding_subfig(fig, padding=0.1)`
-  - `draw_graph_module(fig)`: 目盛・ラベル・タイトル・メイン領域をまとめた 6 サブ図を返す。
+  - `draw_graph_module(fig)`: 目盛・ラベル・タイトル・メイン領域をまとめた `GraphModule` を返す。
+    - `x_axis`, `x_label`, `y_label`, `y_axis`, `main`, `title`
 - デバッグ: `IS_VISIBLE_FRAME` を True にすると分割枠を表示。
 
 ### decorators.py
@@ -53,7 +54,7 @@ Matplotlib 補助を用途別に分割したパッケージです。`from matplo
 - `plot_template(title, width=1200, height=800, ratios=None)`
   - タイトル/メイン/メタの 3 分割を `(fig, figs)` で返す（`ratios=None` の場合は `[1, 5, 2]`）。
 - 中央の司令塔:
-  - `plot_on_module(module_figs, x_data, y_data, title, renderer=render_line, x_axis, y_axis, grid=None, series_specs=None)`
+  - `plot_on_module(module, x_data, y_data, title, renderer=render_line, x_axis, y_axis, grid=None, series_specs=None)`
     - 軸レンジは `series_specs` があれば全系列から計算し、`AxisConfig.range` 指定があればそれを優先。
     - グリッドはデータより背面 (`zorder=0`) に描画し、目盛・ラベル・タイトルを各サブ領域に配置。
 
@@ -75,8 +76,9 @@ series = [
     SeriesSpec(x=x, y=np.cos(x), renderer=render_line, label="cos", linestyle="--"),
 ]
 
+module = draw_graph_module(left_fig)
 plot_on_module(
-    draw_graph_module(left_fig),
+    module,
     x,
     series[0].y,
     "Sine & Cosine",

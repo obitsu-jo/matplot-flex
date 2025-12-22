@@ -36,8 +36,9 @@ series = [
     SeriesSpec(x=x, y=y2, renderer=render_line, label="cos", linestyle="--"),
 ]
 
+module = draw_graph_module(left_fig)
 plot_on_module(
-    draw_graph_module(left_fig),
+    module,
     x,
     y1,
     "Sine & Cosine",
